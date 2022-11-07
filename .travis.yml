@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t ikaushiksharma/react-test -f ./client/Dockerfile.dev ./client
+
+script: -docker run ikaushiksharma/react-test npm test -- --coverage
+
+after_success: -docker build ikaushiksharma/multi-client ./client
+  -docker build ikaushiksharma/multi-nginx ./nginx
+  -docker build ikaushiksharma/multi-server ./server
+  -docker build ikaushiksharma/multi-worker ./worker
+# login to docker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+# take these images and push em to docker hub
+  - docker push ikaushiksharma/multi-client 
+  - docker push ikaushiksharma/multi-nginx 
+  - docker push ikaushiksharma/multi-server
+  - docker push ikaushiksharma/multi-worker
